@@ -23,8 +23,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updateStatusItemTitle()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            Task { @MainActor in
-                if let self {
+            if let self {
+                Task { @MainActor in
                     self.viewModel.refreshNow()
                 }
             }
@@ -194,8 +194,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                if let self {
+            if let self {
+                Task { @MainActor in
                     self.viewModel.refreshNow()
                 }
             }
@@ -215,8 +215,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            Task { @MainActor in
-                if let self {
+            if let self {
+                Task { @MainActor in
                     self.closePopover(nil)
                 }
             }
