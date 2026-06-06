@@ -22,7 +22,25 @@ Install the command line tools if needed:
 xcode-select --install
 ```
 
-## Build and run
+## Install
+
+Build and install the app as a macOS `.app` bundle:
+
+```bash
+./scripts/install_app.sh
+```
+
+By default, the script installs **YESSS Quota Tray.app** into `/Applications` if writable, otherwise into `~/Applications`, and then launches it.
+
+Useful options:
+
+```bash
+./scripts/install_app.sh --target ~/Applications
+./scripts/install_app.sh --no-open
+./scripts/install_app.sh --name "YESSS Quota Tray"
+```
+
+## Build and run without installing
 
 ```bash
 ./scripts/build_and_run.sh
