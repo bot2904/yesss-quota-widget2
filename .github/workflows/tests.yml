@@ -1,8 +1,10 @@
-name: Tests
+name: Tests and Release
 
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -24,3 +26,33 @@ jobs:
 
       - name: Run tests
         run: swift test
+
+  release-build:
+    name: Build release app
+    runs-on: macos-14
+    needs: swift-tests
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build app bundle
+        run: scripts/install_app.sh --target "$PWD/dist" --no-open
+
+      - name: Package app bundle
+        run: |
+          cd dist
+          ditto -c -k --sequesterRsrc --keepParent "YESSS Quota Tray.app" "../YESSS-Quota-Tray-${GITHUB_REF_NAME}-macos.zip"
+
+      - name: Publish GitHub release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "YESSS-Quota-Tray-${GITHUB_REF_NAME}-macos.zip" \
+            --title "YESSS Quota Tray ${GITHUB_REF_NAME}" \
+            --notes "Prebuilt macOS app bundle for YESSS Quota Tray." \
+            --verify-tag
