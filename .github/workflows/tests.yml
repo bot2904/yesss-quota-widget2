@@ -51,8 +51,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "YESSS-Quota-Tray-${GITHUB_REF_NAME}-macos.zip" \
-            --title "YESSS Quota Tray ${GITHUB_REF_NAME}" \
-            --notes "Prebuilt macOS app bundle for YESSS Quota Tray." \
-            --verify-tag
+          asset="YESSS-Quota-Tray-${GITHUB_REF_NAME}-macos.zip"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$asset" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              "$asset" \
+              --title "YESSS Quota Tray ${GITHUB_REF_NAME}" \
+              --notes "Prebuilt macOS app bundle for YESSS Quota Tray." \
+              --verify-tag
+          fi
