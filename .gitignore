@@ -1,6 +1,7 @@
 .build/
 .swiftpm/
 .env
+.clawpatch/
 .DS_Store
 *.xcuserstate
 xcuserdata/

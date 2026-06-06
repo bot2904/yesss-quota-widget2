@@ -14,7 +14,7 @@ final class ParsingTests: XCTestCase {
         )
     }
 
-    func testProgressQuotaExtractionParsesGermanNumbersAndBytes() {
+    func testProgressQuotaExtractionParsesGermanNumbersAndBytes() throws {
         let lines = [
             "Datenvolumen Österreich",
             "Verfügbar: 8,25 GB",
@@ -24,26 +24,28 @@ final class ParsingTests: XCTestCase {
         let quotas = QuotaParser.extractProgressQuotas(lines: lines)
 
         XCTAssertEqual(quotas.count, 1)
-        XCTAssertEqual(quotas[0].title, "Datenvolumen Österreich")
-        XCTAssertEqual(quotas[0].category, "data")
-        XCTAssertEqual(quotas[0].remainingHuman, "8.25 GB")
-        XCTAssertEqual(quotas[0].totalHuman, "10.0 GB")
-        XCTAssertEqual(quotas[0].percentUsed, 17.5)
+        let quota = try XCTUnwrap(quotas.first)
+        XCTAssertEqual(quota.title, "Datenvolumen Österreich")
+        XCTAssertEqual(quota.category, "data")
+        XCTAssertEqual(quota.remainingHuman, "8.25 GB")
+        XCTAssertEqual(quota.totalHuman, "10.0 GB")
+        XCTAssertEqual(quota.percentUsed, 17.5)
     }
 
-    func testEUQuotaExtraction() {
+    func testEUQuotaExtraction() throws {
         let lines = ["Datenvolumen EU verbleibend: 3,5 GB von 5 GB"]
 
         let quotas = QuotaParser.extractEUDataQuota(lines: lines, existingCount: 1)
 
         XCTAssertEqual(quotas.count, 1)
-        XCTAssertEqual(quotas[0].id, "datenvolumen-eu-2")
-        XCTAssertEqual(quotas[0].category, "eu_data")
-        XCTAssertEqual(quotas[0].remainingHuman, "3.5 GB")
-        XCTAssertEqual(quotas[0].percentUsed, 30)
+        let quota = try XCTUnwrap(quotas.first)
+        XCTAssertEqual(quota.id, "datenvolumen-eu-2")
+        XCTAssertEqual(quota.category, "eu_data")
+        XCTAssertEqual(quota.remainingHuman, "3.5 GB")
+        XCTAssertEqual(quota.percentUsed, 30)
     }
 
-    func testBuildSnapshotAttachesValidityAndSelectsPrimaryNonEUData() {
+    func testBuildSnapshotAttachesValidityAndSelectsPrimaryNonEUData() throws {
         let html = """
         <section>
           <h2>Datenvolumen Österreich</h2>
@@ -68,10 +70,11 @@ final class ParsingTests: XCTestCase {
 
         XCTAssertEqual(snapshot.status, .ok)
         XCTAssertEqual(snapshot.quotas.count, 2)
-        XCTAssertEqual(snapshot.primaryQuota?.title, "Datenvolumen Österreich")
+        let primaryQuota = try XCTUnwrap(snapshot.primaryQuota)
+        XCTAssertEqual(primaryQuota.title, "Datenvolumen Österreich")
         XCTAssertEqual(snapshot.menuTitle, "8.0 GB")
-        XCTAssertNotNil(snapshot.primaryQuota?.validUntil)
-        XCTAssertNotNil(snapshot.primaryQuota?.resetAt)
+        XCTAssertNotNil(primaryQuota.validUntil)
+        XCTAssertNotNil(primaryQuota.resetAt)
     }
 
     func testSubscriberParserExtractsOptionsAndCurrentLabel() {
